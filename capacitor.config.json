@@ -1,0 +1,6 @@
+{
+  "appId": "com.noswipe.app",
+  "appName": "noswipe",
+  "webDir": "public",
+  "bundledWebRuntime": false
+}
