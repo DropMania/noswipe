@@ -1,6 +1,8 @@
 <script>
     import 'smelte/src/tailwind.css'
 
+    import 'svelte-material-ui/bare.css'
+
     import supabase from './supabase'
     import Login from './components/Login.svelte'
     import Home from './components/Home.svelte'
@@ -32,6 +34,9 @@
     })
 </script>
 
+<svelte:head>
+    <link rel="stylesheet" href="smui-theme.css" />
+</svelte:head>
 <main>
     {#if $loggedIn}
         <Home />

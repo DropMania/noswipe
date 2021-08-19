@@ -1,15 +1,30 @@
 <script>
-    import { TextField, Button, ProgressCircular, DatePicker } from 'smelte'
+    import {
+        TextField,
+        Button,
+        ProgressCircular,
+        DatePicker,
+        Slider,
+        Select
+    } from 'smelte'
+    import RangeSlider from '@smui/slider'
     import supabase from '../supabase'
     import { v4 as uuidv4 } from 'uuid'
-    import { crossfade } from 'svelte/transition'
-
-    let state = 'birthday'
+    import { slide } from 'svelte/transition'
+    let genders = []
+    let loadGenders = async () => {
+        genders = (await supabase.from('gender').select('*')).data.map((g) => ({
+            value: g.id,
+            text: g.text
+        }))
+    }
+    loadGenders()
+    let state = 'name'
     let formData = {
         name: '',
         birthday: '',
-        gender: '',
-        searchfor: '',
+        gender: 1,
+        searchfor: 1,
         minage: 18,
         maxage: 99,
         distance: null
@@ -18,7 +33,6 @@
     let uploading = false
     let currentImgPath = ''
     let image = 'assets/blank.jpg'
-    export let selected = '10.12.2020'
     let checkImage = async () => {
         uploading = true
         let { data } = await supabase
@@ -88,13 +102,15 @@
     }
 </script>
 
-<div class="flex items-center content-center overflow-hidden w-full h-full">
+<div
+    class="flex flex-col items-center content-center overflow-hidden w-full h-full"
+>
     {#if state == 'name'}
         <div
             class="flex flex-col gap-y-10 h-full w-full justify-center items-center mt-10"
-            transition:crossfade
+            transition:slide
         >
-            <div class="relative">
+            <div class="relative flex items-center justify-center">
                 <!-- svelte-ignore a11y-img-redundant-alt -->
                 <img
                     src={image}
@@ -110,7 +126,7 @@
                     />
                 {/if}
                 {#if uploading}
-                    <div class="absolute top-24 left-24">
+                    <div class="absolute ">
                         <ProgressCircular />
                     </div>
                 {/if}
@@ -119,7 +135,13 @@
             {#if noImgYet}
                 <Button on:click={uploadFile}>Upload Profile Image</Button>
             {/if}
+            <Select
+                items={genders}
+                bind:value={formData.gender}
+                label="Select your gender"
+            />
             <TextField label="Enter your name" bind:value={formData.name} />
+
             <Button
                 disabled={formData.name == ''}
                 icon="keyboard_arrow_right"
@@ -128,14 +150,40 @@
         </div>
     {:else if state == 'birthday'}
         <div
-            transition:crossfade
-            class="flex flex-col gap-y-10 h-full w-full justify-center items-center mt-10"
+            transition:slide
+            class="flex flex-col gap-y-10 h-96 w-full justify-start items-center mt-20 z-0"
         >
-            <DatePicker open bind:value={selected} />
+            <DatePicker
+                label="Enter your birthday"
+                bind:value={formData.birthday}
+            />
             <Button
-                disabled={formData.name == ''}
+                disabled={formData.birthday == ''}
                 icon="keyboard_arrow_right"
-                on:click={() => (state = 'birthday')}>Go on</Button
+                on:click={() => (state = 'lookin')}>Go on</Button
+            >
+        </div>
+    {:else if state == 'lookin'}
+        <div
+            transition:slide
+            class="flex flex-col gap-y-10 h-96 w-full justify-start items-center mt-20 z-0"
+        >
+            <div>
+                <RangeSlider
+                    class="w-56"
+                    range
+                    min={18}
+                    max={99}
+                    bind:start={formData.minage}
+                    bind:end={formData.maxage}
+                />
+
+                {formData.minage} - {formData.maxage}
+            </div>
+            <Button
+                disabled={formData.birthday == ''}
+                icon="keyboard_arrow_right"
+                on:click={() => (state = 'lookin')}>Go on</Button
             >
         </div>
     {/if}

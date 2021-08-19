@@ -23,9 +23,11 @@
         "@capacitor/core": "^3.1.2",
         "@fullhuman/postcss-purgecss": "^4.0.3",
         "@rollup/plugin-json": "^4.1.0",
+        "@smui/slider": "^4.2.0",
         "@supabase/supabase-js": "^1.21.1",
         "sirv-cli": "^1.0.0",
         "smelte": "^1.1.6",
+        "svelte-material-ui": "^4.2.0",
         "svelte-spa-router": "^3.2.0",
         "uuid": "^8.3.2"
     }
