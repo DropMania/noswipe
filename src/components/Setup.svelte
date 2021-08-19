@@ -11,6 +11,7 @@
     import supabase from '../supabase'
     import { v4 as uuidv4 } from 'uuid'
     import { slide } from 'svelte/transition'
+    import { user } from '../store'
     let genders = []
     let loadGenders = async () => {
         genders = (await supabase.from('gender').select('*')).data.map((g) => ({
@@ -27,7 +28,7 @@
         searchfor: 1,
         minage: 18,
         maxage: 99,
-        distance: null
+        distance: 0
     }
     let noImgYet = false
     let uploading = false
@@ -38,7 +39,7 @@
         let { data } = await supabase
             .from('profile_image')
             .select('*')
-            .eq('user', supabase.auth.user().id)
+            .eq('user', $user.id)
         if (data.length > 0) {
             noImgYet = false
             currentImgPath = data[0].path
@@ -65,7 +66,7 @@
             await supabase.from('profile_image').insert({
                 id,
                 path: `${id}.${extension}`,
-                user: supabase.auth.user().id
+                user: $user.id
             })
             image = supabase.storage
                 .from('profile-images')
@@ -100,17 +101,24 @@
             }
         })
     }
+    let updateUser = async () => {
+        let {data} = await supabase.from('user').update({
+            ...formData,
+            state:'DONE'
+        }).eq('id',$user.id)
+        user.set(data[0])
+    }
 </script>
 
 <div
-    class="flex flex-col items-center content-center overflow-hidden w-full h-full"
+    class="flex flex-col items-center content-center overflow-hidden w-full h-full "
 >
     {#if state == 'name'}
         <div
-            class="flex flex-col gap-y-10 h-full w-full justify-center items-center mt-10"
+            class="flex flex-col gap-y-10 h-screen w-full justify-start items-center "
             transition:slide
         >
-            <div class="relative flex items-center justify-center">
+            <div class="relative flex items-center justify-center mt-10">
                 <!-- svelte-ignore a11y-img-redundant-alt -->
                 <img
                     src={image}
@@ -151,8 +159,9 @@
     {:else if state == 'birthday'}
         <div
             transition:slide
-            class="flex flex-col gap-y-10 h-96 w-full justify-start items-center mt-20 z-0"
+            class="flex flex-col gap-y-10 h-screen w-full justify-start items-center z-0"
         >
+        <div class='mt-10'></div>
             <DatePicker
                 label="Enter your birthday"
                 bind:value={formData.birthday}
@@ -162,13 +171,15 @@
                 icon="keyboard_arrow_right"
                 on:click={() => (state = 'lookin')}>Go on</Button
             >
+        
         </div>
     {:else if state == 'lookin'}
         <div
             transition:slide
-            class="flex flex-col gap-y-10 h-96 w-full justify-start items-center mt-20 z-0"
+            class="flex flex-col gap-y-10 h-screen w-full justify-start items-center  z-0"
         >
-            <div>
+        <h3 class="mt-10">Looking for</h3>
+            <div class="flex flex-col items-center">
                 <RangeSlider
                     class="w-56"
                     range
@@ -178,12 +189,31 @@
                     bind:end={formData.maxage}
                 />
 
-                {formData.minage} - {formData.maxage}
+                Age Range: {formData.minage} - {formData.maxage}
+            </div>
+            <Select
+                items={genders}
+                bind:value={formData.searchfor}
+                label="Select Gender"
+            />
+            <div class="flex flex-col items-center">
+            <RangeSlider
+                    class="w-56"
+                    min={0}
+                    max={100}
+                    bind:value={formData.distance}
+                />Range: 
+                {#if formData.distance == 0}
+                Everywhere
+                {:else}
+                {formData.distance}km
+                {/if}
             </div>
             <Button
                 disabled={formData.birthday == ''}
                 icon="keyboard_arrow_right"
-                on:click={() => (state = 'lookin')}>Go on</Button
+                
+                on:click={updateUser}>Save Data</Button
             >
         </div>
     {/if}

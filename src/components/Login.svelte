@@ -6,9 +6,6 @@
             {
                 provider: 'google'
             },
-            {
-                redirectTo: location.href
-            }
         )
     }
 </script>
