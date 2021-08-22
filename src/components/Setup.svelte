@@ -28,7 +28,7 @@
             .from('user')
             .update({
                 ...formData,
-                state: 'DONE'
+                state: 'QUESTIONS'
             })
             .eq('id', $user.id)
         user.set(data[0])
