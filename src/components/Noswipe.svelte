@@ -1,1 +1,1 @@
-<h1 class="font-thin">Noswipe</h1>
+<h1 class="font-thin">Noswipe yo</h1>
