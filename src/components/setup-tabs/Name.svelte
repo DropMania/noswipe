@@ -26,6 +26,7 @@
         } else {
             noImgYet = true
         }
+        uploading = false
     }
     checkImage()
     let uploadFile = () => {
