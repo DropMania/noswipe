@@ -26,6 +26,7 @@
         "@smui/linear-progress": "^4.2.0",
         "@smui/slider": "^4.2.0",
         "@supabase/supabase-js": "^1.21.1",
+        "firebase": "^9.0.0",
         "sirv-cli": "^1.0.0",
         "smelte": "^1.1.6",
         "svelte-material-ui": "^4.2.0",
