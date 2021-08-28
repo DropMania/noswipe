@@ -2,8 +2,10 @@
     import { TextField, Button, ProgressCircular, Select } from 'smelte'
     import { user } from '../../store'
     import { slide } from 'svelte/transition'
+    import { db, storage } from '../../firebase'
+    import { doc, updateDoc } from 'firebase/firestore'
+    import { uploadBytes, ref, getDownloadURL } from 'firebase/storage'
     import { v4 as uuidv4 } from 'uuid'
-    import supabase from '../../supabase'
     export let formData
     export let genders
     export let state
@@ -13,16 +15,11 @@
     let image = 'assets/blank.jpg'
     let checkImage = async () => {
         uploading = true
-        let { data } = await supabase
-            .from('profile_image')
-            .select('*')
-            .eq('user', $user.id)
-        if (data.length > 0) {
+        if ($user.images.length > 0) {
             noImgYet = false
-            currentImgPath = data[0].path
-            image = supabase.storage
-                .from('profile-images')
-                .getPublicUrl(currentImgPath).publicURL
+            currentImgPath = `profile-images/${$user.images[0]}`
+            let storageRef = ref(storage, currentImgPath)
+            image = await getDownloadURL(storageRef)
         } else {
             noImgYet = true
         }
@@ -36,20 +33,14 @@
         input.click()
         input.onchange = async (e) => {
             uploading = true
-            let id = uuidv4()
-            let extension = input.files[0].name.split('.').pop()
-            await supabase.storage
-                .from('profile-images')
-                .upload(`${id}.${extension}`, input.files[0])
-            await supabase.from('profile_image').insert({
-                id,
-                path: `${id}.${extension}`,
-                user: $user.id
+            let fileId = uuidv4()
+            let storageRef = ref(storage, `profile-images/${fileId}`)
+            await uploadBytes(storageRef, e.target.files[0])
+            await updateDoc(doc(db, 'users', $user.uid), {
+                images: [fileId]
             })
-            image = supabase.storage
-                .from('profile-images')
-                .getPublicUrl(`${id}.${extension}`).publicURL
-            currentImgPath = id
+            image = await getDownloadURL(storageRef)
+            currentImgPath = `profile-images/${fileId}`
             noImgYet = false
         }
     }
@@ -60,21 +51,16 @@
         input.click()
         input.onchange = async (e) => {
             uploading = true
-            await supabase.storage
-                .from('profile-images')
-                .update(`${currentImgPath}`, input.files[0])
+            let storageRef = ref(storage, currentImgPath)
+            await uploadBytes(storageRef, e.target.files[0])
             image = 'assets/blank.jpg'
-            setTimeout(() => {
-                image = supabase.storage
-                    .from('profile-images')
-                    .getPublicUrl(currentImgPath).publicURL
-            }, 1)
+            image = await getDownloadURL(storageRef)
             noImgYet = false
         }
     }
     let onload = (el) => {
         el.addEventListener('load', () => {
-            if (currentImgPath) {
+            if (currentImgPath && image !== 'assets/blank.jpg') {
                 uploading = false
             }
         })
@@ -118,7 +104,7 @@
     <TextField label="Enter your name" bind:value={formData.name} />
 
     <Button
-        disabled={formData.name == ''}
+        disabled={formData.name == '' || formData.gender == ''}
         icon="keyboard_arrow_right"
         on:click={() => (state = 'birthday')}>Go on</Button
     >

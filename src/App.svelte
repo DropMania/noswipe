@@ -21,7 +21,9 @@
                     birthday: '',
                     minage: 18,
                     maxage: 99,
-                    distance: 0
+                    distance: 0,
+                    images: [],
+                    answers: []
                 }
                 await setDoc(doc(db, 'users', user.uid), userData)
                 userStore.set(userData)

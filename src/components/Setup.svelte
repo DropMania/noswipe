@@ -1,37 +1,37 @@
 <script>
-    import supabase from '../supabase'
     import { user } from '../store'
+    import { collection, getDocs } from 'firebase/firestore'
+    import { db } from '../firebase'
+    import { doc, updateDoc, getDoc } from 'firebase/firestore'
     import Name from './setup-tabs/Name.svelte'
     import Birth from './setup-tabs/Birth.svelte'
     import Lookin from './setup-tabs/Lookin.svelte'
     let genders = []
     let loadGenders = async () => {
-        genders = (await supabase.from('gender').select('*')).data.map((g) => ({
-            value: g.id,
-            text: g.text
-        }))
+        genders = (await getDocs(collection(db, 'genders'))).docs.map(
+            (d) => d.data().text
+        )
     }
     loadGenders()
     let state = 'name'
     let formData = {
         name: '',
         birthday: '',
-        gender: 1,
-        searchfor: 1,
+        gender: '',
+        searchfor: [],
         minage: 18,
         maxage: 99,
         distance: 0
     }
 
     let updateUser = async () => {
-        let { data } = await supabase
-            .from('user')
-            .update({
-                ...formData,
-                state: 'QUESTIONS'
-            })
-            .eq('id', $user.id)
-        user.set(data[0])
+        let userDoc = doc(db, 'users', $user.uid)
+        await updateDoc(userDoc, {
+            ...formData,
+            state: 'QUESTIONS'
+        })
+        let docData = (await getDoc(userDoc)).data()
+        user.set(docData)
     }
 </script>
 

@@ -1,7 +1,7 @@
 <script>
     import { Button, Select } from 'smelte'
     import RangeSlider from '@smui/slider'
-
+    import Chip, { Set, Text } from '@smui/chips'
     import { slide } from 'svelte/transition'
     export let formData
     export let genders
@@ -25,11 +25,11 @@
 
         Age Range: {formData.minage} - {formData.maxage}
     </div>
-    <Select
-        items={genders}
-        bind:value={formData.searchfor}
-        label="Select Gender"
-    />
+    <Set chips={genders} let:chip filter bind:selected={formData.searchfor}>
+        <Chip {chip}>
+            <Text>{chip}</Text>
+        </Chip>
+    </Set>
     <div class="flex flex-col items-center">
         <RangeSlider
             class="w-56"
@@ -44,7 +44,7 @@
         {/if}
     </div>
     <Button
-        disabled={formData.birthday == ''}
+        disabled={formData.searchfor.length < 1}
         icon="keyboard_arrow_right"
         on:click={updateUser}>Save Data</Button
     >

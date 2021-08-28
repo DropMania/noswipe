@@ -1,27 +1,42 @@
 <script>
-    import supabase from '../supabase.js'
     import { onMount } from 'svelte'
     import LinearProgress from '@smui/linear-progress'
     import { Button } from 'smelte'
     import { user } from '../store'
     import { slide } from 'svelte/transition'
+    import {
+        collection,
+        getDocs,
+        getDoc,
+        doc,
+        addDoc,
+        updateDoc
+    } from 'firebase/firestore'
+    import { db } from '../firebase'
+    import { randomNumbers } from '../utils'
     let questions
     let currentQuestion = 0
     let answers = []
     onMount(async () => {
-        questions = (await supabase.rpc('random_questions')).data
+        let questionsRef = await getDocs(collection(db, 'questions'))
+        let nums = randomNumbers(3, 0, questionsRef.docs.length - 1)
+        let randomDocs = nums.map((num) => questionsRef.docs[num].id)
+        questions = await Promise.all(
+            randomDocs.map(async (docId) => ({
+                ...(await getDoc(doc(db, 'questions', docId))).data(),
+                id: docId
+            }))
+        )
     })
     let addAnswer = async (answer, question) => {
-        answers = [...answers, { user: $user.id, answer, question }]
+        answers = [...answers, { answer, question: question.text }]
+        console.log(answers)
         if (answers.length === questions.length) {
-            await supabase.from('user_answer').insert(answers)
-            let { data } = await supabase
-                .from('user')
-                .update({
-                    state: 'DONE'
-                })
-                .eq('id', $user.id)
-            user.set(data[0])
+            $user.state = 'DONE'
+            await updateDoc(doc(db, 'users', $user.uid), {
+                answers,
+                state: 'DONE'
+            })
         } else {
             currentQuestion += 1
         }
@@ -35,18 +50,15 @@
         {#key currentQuestion}
             <div class="mt-20 flex flex-col items-center" transition:slide>
                 <div class="bg-gray-300 bg-opacity-25  h5 rounded p-5 max-w-sm">
-                    {questions[currentQuestion].question}
+                    {questions[currentQuestion].text}
                 </div>
 
                 {#each questions[currentQuestion].answers as answer}
                     <Button
                         class="mt-10 h5 rounded p-5 max-w-sm "
-                        on:click={addAnswer(
-                            answer.id,
-                            questions[currentQuestion].id
-                        )}
+                        on:click={addAnswer(answer, questions[currentQuestion])}
                     >
-                        {answer.answer}
+                        {answer}
                     </Button>
                 {/each}
             </div>

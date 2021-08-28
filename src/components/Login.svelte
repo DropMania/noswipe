@@ -3,12 +3,17 @@
 
     //import firebase from './firebase'
 
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+    import {
+        getAuth,
+        signInWithPopup,
+        signInWithRedirect,
+        GoogleAuthProvider
+    } from 'firebase/auth'
     import { Button } from 'smelte'
     let auth = getAuth()
     let provider = new GoogleAuthProvider()
     export let loginGoogle = async () => {
-        signInWithPopup(auth, provider)
+        signInWithRedirect(auth, provider)
     }
 </script>
 
