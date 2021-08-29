@@ -1,11 +1,6 @@
 <script>
-    import supabase from '../supabase'
-
-    //import firebase from './firebase'
-
     import {
         getAuth,
-        signInWithPopup,
         signInWithRedirect,
         GoogleAuthProvider
     } from 'firebase/auth'

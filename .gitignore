@@ -4,3 +4,4 @@
 /public/global.css
 .DS_Store
 /android/
+/cloud-function/node_modules

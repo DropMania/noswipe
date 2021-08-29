@@ -2,7 +2,8 @@
     import 'smelte/src/tailwind.css'
     import 'svelte-material-ui/bare.css'
     import { auth, db } from './firebase'
-    import { setDoc, doc, getDoc } from 'firebase/firestore'
+    import { setDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
+    import { Geolocation } from '@capacitor/geolocation'
     import Login from './components/Login.svelte'
     import Home from './components/Home.svelte'
     import { loggedIn, user as userStore } from './store'
@@ -30,6 +31,13 @@
             } else {
                 userStore.set(userDoc.data())
             }
+            const coordinates = await Geolocation.getCurrentPosition()
+            await updateDoc(doc(db, 'users', user.uid), {
+                location: {
+                    lat: coordinates.coords.latitude,
+                    lon: coordinates.coords.longitude
+                }
+            })
         } else {
             loggedIn.set(false)
         }
