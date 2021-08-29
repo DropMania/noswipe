@@ -1,5 +1,6 @@
 <script>
-    import { db, storage } from '../firebase'
+    import { db, storage, functions } from '../firebase'
+    import { httpsCallable } from 'firebase/functions'
     import { collection, query, where, getDocs } from 'firebase/firestore'
     import LinearProgress from '@smui/linear-progress'
     import { getDownloadURL, ref } from 'firebase/storage'
@@ -25,6 +26,10 @@
             })
         )
         loading = false
+        /* let data = await httpsCallable(
+            functions,
+            'getMatchData'
+        )({ uid: $user.uid }) */
     })
 </script>
 

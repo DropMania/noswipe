@@ -1,6 +1,19 @@
 {
-  "appId": "com.noswipe.app",
-  "appName": "noswipe",
-  "webDir": "public",
-  "bundledWebRuntime": false
+    "appId": "com.noswipe.app",
+    "appName": "noswipe",
+    "webDir": "public",
+    "bundledWebRuntime": false,
+    "plugins": {
+        "CapacitorFirebaseAuth": {
+            "providers": ["google.com"],
+            "languageCode": "en",
+            "nativeAuth": false,
+            "properties": {
+                "google": {}
+            },
+            "permissions": {
+                "google": ["profile", "https://www.googleapis.com/auth/drive"]
+            }
+        }
+    }
 }
