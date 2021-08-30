@@ -6,9 +6,11 @@
     import { Geolocation } from '@capacitor/geolocation'
     import Login from './components/Login.svelte'
     import Home from './components/Home.svelte'
+    import LinearProgress from '@smui/linear-progress'
     import { loggedIn, user as userStore } from './store'
-
+    let loading = true
     auth.onAuthStateChanged(async (user) => {
+        loading = true
         if (user) {
             loggedIn.set(true)
             let userDoc = await getDoc(doc(db, 'users', user.uid))
@@ -31,16 +33,19 @@
             } else {
                 userStore.set(userDoc.data())
             }
-            const coordinates = await Geolocation.getCurrentPosition()
-            await updateDoc(doc(db, 'users', user.uid), {
-                location: {
-                    lat: coordinates.coords.latitude,
-                    lon: coordinates.coords.longitude
-                }
-            })
+            try {
+                const coordinates = await Geolocation.getCurrentPosition()
+                await updateDoc(doc(db, 'users', user.uid), {
+                    location: {
+                        lat: coordinates.coords.latitude,
+                        lon: coordinates.coords.longitude
+                    }
+                })
+            } catch (e) {}
         } else {
             loggedIn.set(false)
         }
+        loading = false
     })
 </script>
 
@@ -48,7 +53,11 @@
     <link rel="stylesheet" href="smui-theme.css" />
 </svelte:head>
 <main>
-    {#if $loggedIn}
+    {#if loading}
+        <div class="absolute w-full">
+            <LinearProgress indeterminate />
+        </div>
+    {:else if $loggedIn}
         <Home />
     {:else}
         <Login />

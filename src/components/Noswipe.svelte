@@ -7,9 +7,18 @@
     import { user } from '../store'
     import { onMount } from 'svelte'
     import Matches from './noswipe-tabs/Matches.svelte'
+    import Profile from './noswipe-tabs/Profile.svelte'
     import { Tabs, Tab } from 'smelte'
     let matches = []
     let loading = true
+    let items = [
+        { id: 1 },
+        { id: 2 },
+        { id: 3 },
+        { id: 4 },
+        { id: 5 },
+        { id: 6 }
+    ]
     onMount(async () => {
         let usersRef = collection(db, 'users')
         let q = query(usersRef, where('gender', 'in', $user.searchfor))
@@ -39,7 +48,7 @@
     </div>
 {:else}
     <Tabs
-        selected="2"
+        selected="3"
         class="bg-black shadow-sm text-yellow-200 "
         classes="absolute bottom-0 w-full border-t-2 border-gray-500"
         let:selected
@@ -58,7 +67,9 @@
             <Tab id="2" {selected}>
                 <Matches {matches} />
             </Tab>
-            <Tab id="3" {selected}>Ok</Tab>
+            <Tab id="3" {selected}>
+                <Profile bind:items />
+            </Tab>
         </div>
     </Tabs>
 {/if}
